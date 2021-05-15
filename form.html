@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>侦听器</title>
+</head>
+<body>
+  <div id="app">
+      <h2>用户注册</h2>
+    用户名：<input type="text" v-model.lazy="username"> <br>
+    Email：<input type="text" v-model.lazy="useremail"> <br>
+    手机号：<input type="text" v-model.lazy="mobile"> <br>
+    密码：<input type="password" v-model.lazy="pass1"> <br>
+    确认密码：<input type="password" v-model.lazy="pass2"> <br>
+      <input type="submit"v-on:click="regist" :disabled="regstatus"  value="注册" >
+  </div>
+  <script src="../2009/axios.min.js"></script>
+  <script src="../2009/vue.min.js"></script>
+
+  <script>
+    new Vue({
+      el: "#app",
+      data:{
+        username:null,
+        useremail:null,
+        mobile:null,
+        email:null,
+        pass1:null,
+        pass2:null,
+        regstatus:true,
+      },
+      methods:{
+          regist(){
+              //获取input中的用户输入
+              let uesr_inof={   
+                username:this.username ,
+                useremail:this.useremail,
+                mobile:this.mobile,
+                pass1:this.pass1
+            }
+            //请求注册接口
+            let hello = "http://localhost:3001/check/add"
+            axios.post(hello,uesr_inof).then(function(res){
+                console.log("服务器返回的数据: ",res.data);
+            //服务器返回的数据信息
+           // console.log(res.body)
+            })
+          }
+      },
+      computed:{},
+      //侦听器
+      watch:{
+        username(v){
+            console.log(v)
+            //请求后台接口，检查用户名是否已被占用
+            let hello = "http://localhost:3001/check/username?name="+v
+            console.log(hello)
+            axios.get(hello).then(function(res){
+                console.log("服务器返回的数据: ",res.data)
+                //根据错误码判断
+                if(res.data.errno>0)
+                {
+                    alert("请换一个用户名")
+                }else{
+
+                }
+            })
+        },
+        useremail(v){
+            let hello = "http://localhost:3001/check/email?email=" + v
+            console.log(hello);
+          axios(hello).then(function(res){
+               console.log("服务器返回的数据: ",res.data)
+            if(res.data.error >1){  // 1不可注册（已被占用）
+
+              alert("邮箱已被占用")
+            }else{      //可以注册
+                0
+            }
+          })
+
+        },
+
+        //验证手机号
+        mobile(v){
+            let hello = "http://localhost:3001/check/mobile?mobile=" + v
+            console.log(hello);
+          axios(hello).then(function(res){
+               console.log("服务器返回的数据: ",res.data)
+            if(res.data.error >1){  // 1不可注册（已被占用）
+
+              alert("手机号已被占用")
+            }else{      //可以注册
+                0
+            }
+          })
+
+        },
+
+      //验证两次输入的密码是否一致 两次密码一致，注册改为可用状态
+      pass2(v){
+            if( v === this.pass1 ){
+                this.regstatus = false
+            }
+        }
+      },
+
+
+
+    })
+  </script>
+</body>
+</html>
